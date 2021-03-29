@@ -5,21 +5,29 @@ import 'package:rxdart/rxdart.dart';
 import 'validator.dart';
 
 class Bloc with Validators {
-  final _emailController = StreamController<String>.broadcast();
-  final _passwordController = StreamController<String>.broadcast();
+  final _email = BehaviorSubject<String>();
+  final _password = BehaviorSubject<String>();
 
-  get changeEmail => _emailController.sink.add;
+  Function(String) get changeEmail => _email.sink.add;
 
-  get changePassword => _passwordController.sink.add;
+  Function(String) get changePassword => _password.sink.add;
 
-  get email => _emailController.stream.transform(validateEmail);
+  Stream<String> get email => _email.stream.transform(validateEmail);
 
-  get password => _passwordController.stream.transform(validatePassword);
+  Stream<String> get password => _password.stream.transform(validatePassword);
 
-  get submitValid => Rx.combineLatest2(email, password, (e, p) => true);
+  Stream<bool> get submitValid =>
+      Rx.combineLatest2(email, password, (e, p) => true);
+
+  submit() {
+    final validEmail = _email.value;
+    final validPassword = _password.value;
+
+    print('Email is $validEmail, Password is $validPassword');
+  }
 
   dispose() {
-    _emailController.close();
-    _passwordController.close();
+    _email.close();
+    _password.close();
   }
 }
